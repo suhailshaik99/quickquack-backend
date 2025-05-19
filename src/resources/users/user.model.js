@@ -72,6 +72,11 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
 
+    bio: {
+      type: String,
+      default: null
+    },
+    
     active: {
       type: Boolean,
       default: true,
@@ -92,7 +97,6 @@ userSchema.pre(/^find/, function (next) {
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
-  console.log(this.password, this.confirmPassword);
   this.password = await bcrypt.hash(this.password, 12);
   this.confirmPassword = null;
   next();

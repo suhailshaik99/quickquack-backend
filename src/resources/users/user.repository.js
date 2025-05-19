@@ -8,9 +8,7 @@ class UserRepository {
   }
 
   static async loginUser(email, password) {
-    const user = await User.findOne({ email }, { email: 1 }).select(
-      "+password"
-    );
+    const user = await User.findOne({ email }).select("+password");
     if (!user) return false;
     const success = await user.comparePassword(password, user.password);
     return success ? user : false;
@@ -48,6 +46,23 @@ class UserRepository {
     user.passwordResetExpires = null;
     const updatedUser = await user.save();
     return updatedUser ? true : false;
+  }
+
+  static async getUserDetails(id) {
+    const user = await User.findById(
+      { _id: id },
+      {
+        __v: 0,
+        confirmPassword: 0,
+        createdAt: 0,
+        updatedAt: 0,
+        passwordResetExpires: 0,
+        passwordResetToken: 0,
+        passwordChangedAt: 0,
+      }
+    );
+    if (!user) return false;
+    return user;
   }
 }
 

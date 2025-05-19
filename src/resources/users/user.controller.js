@@ -3,22 +3,11 @@ import crypto from "crypto";
 import signJWT from "../../utils/signJWT.js";
 import AppError from "../../utils/AppError.js";
 import UserRepository from "./user.repository.js";
-import catchAsync from "../../utils/catchAsync.js";
+import catchAsync from "../../utils/CatchAsync.js";
 
 class UserController {
   static userSignUp = catchAsync(async (req, res, next) => {
     const userDetails = await UserRepository.signUpUser(req.body);
-    let payload = {
-      id: userDetails._id,
-      email: userDetails.email,
-    };
-    const token = signJWT(payload, process.env.JWT_SECRET, "5m");
-    res.cookie("jwt-token", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "None",
-      maxAge: 5 * 60 * 1000,
-    });
     return res.status(200).json({
       success: true,
       status: "User Created Successfully",
@@ -37,18 +26,17 @@ class UserController {
       email: userDetails.email,
     };
 
-    const token = signJWT(payload, process.env.JWT_SECRET, "5m");
-    res.cookie("jwt-token", token, {
+    const token = signJWT(payload, process.env.JWT_SECRET, "30m");
+    res.cookie("jwtToken", token, {
       httpOnly: true,
       secure: true,
       sameSite: "None",
-      maxAge: 5 * 60 * 1000,
+      maxAge: 30 * 60 * 1000,
     });
     res.status(200).json({
       success: true,
       status: "User Authenticated!!",
       userDetails,
-      token,
     });
   });
 
@@ -61,7 +49,6 @@ class UserController {
     res.status(200).json({
       success: true,
       status: "OTP sent successfully to your email..!",
-      token,
     });
   });
 
@@ -77,6 +64,16 @@ class UserController {
     res.status(200).json({
       success: true,
       status: "Password Changed Successfully..!",
+    });
+  });
+
+  static authenticateUser = catchAsync(async (req, res, next) => {
+    const user = await UserRepository.getUserDetails(req.id);
+    if (!user) return next(new AppError("Invalid User", 404));
+    res.status(200).json({
+      success: true,
+      status: "User Authenticated Succesfully!.",
+      user,
     });
   });
 }
