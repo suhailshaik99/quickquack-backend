@@ -12,6 +12,8 @@ import GlobalErrHandler from "./src/utils/GlobalErrHandler.js";
 import { router as userRouter } from "./src/resources/users/user.routes.js";
 import { router as likesRouter } from "./src/resources/likes/likes.routes.js";
 import { router as postsRouter } from "./src/resources/posts/posts.routes.js";
+import { router as friendsRouter } from "./src/resources/friends/friends.routes.js";
+import { router as commentsRouter } from "./src/resources/comments/comments.routes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -37,6 +39,8 @@ app.use(
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/likes", likesRouter);
 app.use("/api/v1/posts", postsRouter);
+app.use("/api/v1/friends", friendsRouter);
+app.use("/api/v1/comments", commentsRouter);
 
 // Unhandled Routes
 app.all("*", (req, res) => {

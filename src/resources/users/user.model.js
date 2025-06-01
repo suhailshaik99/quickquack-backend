@@ -69,14 +69,14 @@ const userSchema = new mongoose.Schema(
 
     profilePicture: {
       type: String,
-      default: null,
+      default: "",
     },
 
     bio: {
       type: String,
-      default: null
+      default: "",
     },
-    
+
     active: {
       type: Boolean,
       default: true,

@@ -6,7 +6,7 @@ export default class LikesController {
     const { postId } = req.params;
     const userId = req.id;
     const like = await LikesRepository.createLike(userId, postId);
-    res.status(200).json({
+    res.status(201).json({
       success: true,
       status: "Post Liked Successfully",
     });

@@ -1,5 +1,7 @@
+// Library Imports
 import crypto from "crypto";
 
+// Local Imports
 import signJWT from "../../utils/signJWT.js";
 import AppError from "../../utils/AppError.js";
 import UserRepository from "./user.repository.js";
@@ -17,7 +19,6 @@ class UserController {
   static userLogin = catchAsync(async (req, res, next) => {
     const { email, password } = req.body;
     const userDetails = await UserRepository.loginUser(email, password);
-
     if (!userDetails)
       return next(new AppError("Email or Password is Invalid", 401));
 
@@ -74,6 +75,26 @@ class UserController {
       success: true,
       status: "User Authenticated Succesfully!.",
       user,
+    });
+  });
+
+  static getProfileDetails = catchAsync(async (req, res, next) => {
+    const profileDetails = await UserRepository.getProfileDetails(req.id);
+    if (!profileDetails) return next(new AppError("User not found", 404));
+    res.status(200).json({
+      success: true,
+      status: "Profile Details fetched successfully..!",
+      profileDetails,
+    });
+  });
+
+  static getUserDetails = catchAsync(async (req, res, next) => {
+    const { username } = req.params;
+    const userDetails = await UserRepository.getUserProfileDetails(username);
+    res.status(200).json({
+      success: true,
+      status: "fetched user details successfully!",
+      userDetails,
     });
   });
 }

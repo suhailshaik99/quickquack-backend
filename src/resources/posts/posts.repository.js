@@ -23,6 +23,7 @@ class PostsRepository {
         },
       },
       { $addFields: { likesCount: { $size: "$likes" } } },
+      { $addFields: { commentsCount: { $size: "$comments" } } },
       {
         $addFields: {
           isLikedByUser: {
@@ -30,7 +31,6 @@ class PostsRepository {
           },
         },
       },
-      { $addFields: { commentsCount: { $size: "$comments" } } },
       { $sort: { createdAt: -1 } },
     ]);
   }

@@ -1,6 +1,8 @@
+import mongoose from "mongoose";
+
 import User from "./user.model.js";
-import sendEmail from "../../utils/NodeMailer.js";
 import AppError from "../../utils/AppError.js";
+import sendEmail from "../../utils/NodeMailer.js";
 
 class UserRepository {
   static async signUpUser(userData) {
@@ -63,6 +65,119 @@ class UserRepository {
     );
     if (!user) return false;
     return user;
+  }
+
+  static async getUserProfileDetails(username) {
+    const user = await User.findOne(
+      { username },
+      {
+        _id: 1,
+      }
+    );
+    const userProfileDetails = await User.aggregate([
+      { $match: { _id: user._id } },
+      {
+        $lookup: {
+          from: "posts",
+          localField: "_id",
+          foreignField: "postedBy",
+          as: "posts",
+        },
+      },
+      {
+        $lookup: {
+          from: "friends",
+          localField: "_id",
+          foreignField: "requester",
+          as: "following",
+        },
+      },
+      {
+        $lookup: {
+          from: "friends",
+          localField: "_id",
+          foreignField: "recepient",
+          as: "followers",
+        },
+      },
+      {
+        $addFields: {
+          postsCount: { $size: "$posts" },
+          followersCount: { $size: "$followers" },
+          followingCount: { $size: "$following" },
+        },
+      },
+      {
+        $project: {
+          __v: 0,
+          email: 0,
+          active: 0,
+          mobile: 0,
+          password: 0,
+          createdAt: 0,
+          updatedAt: 0,
+          dateOfBirth: 0,
+          confirmPassword: 0,
+          passwordChangedAt: 0,
+          passwordResetToken: 0,
+          passwordResetExpires: 0,
+        },
+      },
+    ]);
+    return userProfileDetails[0];
+  }
+
+  static async getProfileDetails(id) {
+    const userId = new mongoose.Types.ObjectId(id);
+    const profileDetails = await User.aggregate([
+      { $match: { _id: userId } },
+      {
+        $lookup: {
+          from: "posts",
+          localField: "_id",
+          foreignField: "postedBy",
+          as: "posts",
+        },
+      },
+      {
+        $lookup: {
+          from: "friends",
+          localField: "_id",
+          foreignField: "requester",
+          as: "following",
+        },
+      },
+      {
+        $lookup: {
+          from: "friends",
+          localField: "_id",
+          foreignField: "recepient",
+          as: "followers",
+        },
+      },
+      {
+        $addFields: {
+          postsCount: { $size: "$posts" },
+          followersCount: { $size: "$followers" },
+          followingCount: { $size: "$following" },
+        },
+      },
+      {
+        $project: {
+          posts: 1,
+          postsCount: 1,
+          followers: 1,
+          following: 1,
+          followersCount: 1,
+          followingCount: 1,
+        },
+      },
+    ]);
+    if (profileDetails) {
+      return profileDetails[0];
+    } else {
+      return false;
+    }
   }
 }
 
