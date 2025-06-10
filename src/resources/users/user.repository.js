@@ -75,110 +75,165 @@ class UserRepository {
       }
     );
     const userProfileDetails = await User.aggregate([
-      { $match: { _id: user._id } },
-      {
-        $lookup: {
-          from: "posts",
-          localField: "_id",
-          foreignField: "postedBy",
-          as: "posts",
+  { $match: { _id: user._id } },
+
+  // Get all posts by the user
+  {
+    $lookup: {
+      from: "posts",
+      localField: "_id",
+      foreignField: "postedBy",
+      as: "posts",
+    },
+  },
+
+  // Get all following (user sent requests)
+  {
+    $lookup: {
+      from: "friends",
+      localField: "_id",
+      foreignField: "requester",
+      as: "following",
+    },
+  },
+
+  // Get all followers (user received requests)
+  {
+    $lookup: {
+      from: "friends",
+      localField: "_id",
+      foreignField: "recepient",
+      as: "followers",
+    },
+  },
+
+  // Filter only accepted ones
+  {
+    $addFields: {
+      postsCount: { $size: "$posts" },
+      followersCount: {
+        $size: {
+          $filter: {
+            input: "$followers",
+            as: "f",
+            cond: { $eq: ["$$f.status", "accepted"] },
+          },
         },
       },
-      {
-        $lookup: {
-          from: "friends",
-          localField: "_id",
-          foreignField: "requester",
-          as: "following",
+      followingCount: {
+        $size: {
+          $filter: {
+            input: "$following",
+            as: "f",
+            cond: { $eq: ["$$f.status", "accepted"] },
+          },
         },
       },
-      {
-        $lookup: {
-          from: "friends",
-          localField: "_id",
-          foreignField: "recepient",
-          as: "followers",
-        },
-      },
-      {
-        $addFields: {
-          postsCount: { $size: "$posts" },
-          followersCount: { $size: "$followers" },
-          followingCount: { $size: "$following" },
-        },
-      },
-      {
-        $project: {
-          __v: 0,
-          email: 0,
-          active: 0,
-          mobile: 0,
-          password: 0,
-          createdAt: 0,
-          updatedAt: 0,
-          dateOfBirth: 0,
-          confirmPassword: 0,
-          passwordChangedAt: 0,
-          passwordResetToken: 0,
-          passwordResetExpires: 0,
-        },
-      },
-    ]);
+    },
+  },
+
+  // Remove unnecessary fields
+  {
+    $project: {
+      __v: 0,
+      email: 0,
+      active: 0,
+      mobile: 0,
+      password: 0,
+      createdAt: 0,
+      updatedAt: 0,
+      dateOfBirth: 0,
+      confirmPassword: 0,
+      passwordChangedAt: 0,
+      passwordResetToken: 0,
+      passwordResetExpires: 0,
+    },
+  },
+]);
+
     return userProfileDetails[0];
   }
 
   static async getProfileDetails(id) {
-    const userId = new mongoose.Types.ObjectId(id);
-    const profileDetails = await User.aggregate([
-      { $match: { _id: userId } },
-      {
-        $lookup: {
-          from: "posts",
-          localField: "_id",
-          foreignField: "postedBy",
-          as: "posts",
+  const userId = new mongoose.Types.ObjectId(id);
+  const profileDetails = await User.aggregate([
+    { $match: { _id: userId } },
+
+    // Get user's posts
+    {
+      $lookup: {
+        from: "posts",
+        localField: "_id",
+        foreignField: "postedBy",
+        as: "posts",
+      },
+    },
+
+    // Get all following (sent friend requests)
+    {
+      $lookup: {
+        from: "friends",
+        localField: "_id",
+        foreignField: "requester",
+        as: "allFollowing",
+      },
+    },
+
+    // Get all followers (received friend requests)
+    {
+      $lookup: {
+        from: "friends",
+        localField: "_id",
+        foreignField: "recipient",
+        as: "allFollowers",
+      },
+    },
+
+    // Filter only accepted ones from allFollowing and allFollowers
+    {
+      $addFields: {
+        postsCount: { $size: "$posts" },
+        following: {
+          $filter: {
+            input: "$allFollowing",
+            as: "f",
+            cond: { $eq: ["$$f.status", "accepted"] },
+          },
+        },
+        followers: {
+          $filter: {
+            input: "$allFollowers",
+            as: "f",
+            cond: { $eq: ["$$f.status", "accepted"] },
+          },
         },
       },
-      {
-        $lookup: {
-          from: "friends",
-          localField: "_id",
-          foreignField: "requester",
-          as: "following",
-        },
+    },
+
+    // Count filtered results
+    {
+      $addFields: {
+        followingCount: { $size: "$following" },
+        followersCount: { $size: "$followers" },
       },
-      {
-        $lookup: {
-          from: "friends",
-          localField: "_id",
-          foreignField: "recepient",
-          as: "followers",
-        },
+    },
+
+    // Project final result
+    {
+      $project: {
+        posts: 1,
+        postsCount: 1,
+        followers: 1,
+        following: 1,
+        followersCount: 1,
+        followingCount: 1,
       },
-      {
-        $addFields: {
-          postsCount: { $size: "$posts" },
-          followersCount: { $size: "$followers" },
-          followingCount: { $size: "$following" },
-        },
-      },
-      {
-        $project: {
-          posts: 1,
-          postsCount: 1,
-          followers: 1,
-          following: 1,
-          followersCount: 1,
-          followingCount: 1,
-        },
-      },
-    ]);
-    if (profileDetails) {
-      return profileDetails[0];
-    } else {
-      return false;
-    }
-  }
+    },
+  ]);
+
+  return profileDetails?.[0] || false;
+}
+
 }
 
 export default UserRepository;

@@ -32,7 +32,7 @@ const friendSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-friendSchema.index({ requester: 1, recipient: 1 }, { unique: true });
+friendSchema.index({ requester: 1, recipient: 1 });
 
 const Friends = new mongoose.model("Friends", friendSchema);
 export default Friends;
