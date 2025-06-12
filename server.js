@@ -7,7 +7,6 @@ import { fileURLToPath } from "url";
 import cookieParser from "cookie-parser";
 
 // Local Imports
-import ConnectDB from "./src/database/db.config.js";
 import GlobalErrHandler from "./src/utils/GlobalErrHandler.js";
 import { router as userRouter } from "./src/resources/users/user.routes.js";
 import { router as likesRouter } from "./src/resources/likes/likes.routes.js";
@@ -54,7 +53,9 @@ app.all("*", (req, res) => {
 app.use(GlobalErrHandler);
 
 // Express Server listening to the HTTP requests.
-app.listen(process.env.PORT, () => {
-  ConnectDB();
-  console.log(`Application is listening on port ${process.env.PORT}`);
-});
+// app.listen(process.env.PORT, () => {
+//   ConnectDB();
+//   console.log(`Application is listening on port ${process.env.PORT}`);
+// });
+
+export default app;

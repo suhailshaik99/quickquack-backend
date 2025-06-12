@@ -7,10 +7,23 @@ import jwtAuthorizer from "../../middlewares/jwtAuthorizer.js";
 
 const router = express.Router();
 
+router.get("/", jwtAuthorizer, FriendsController.getFriends);
+
 router.get(
   "/suggested-friends",
   jwtAuthorizer,
   FriendsController.getSuggestedFriends
+);
+
+router.delete(
+  "/remove-follower",
+  jwtAuthorizer,
+  FriendsController.removeFollower
+);
+router.delete(
+  "/remove-following",
+  jwtAuthorizer,
+  FriendsController.removeFollowing
 );
 
 router

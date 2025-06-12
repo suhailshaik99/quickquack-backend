@@ -3,6 +3,19 @@ import catchAsync from "../../utils/CatchAsync.js";
 import FriendsRepository from "./friends.repository.js";
 
 export default class FriendsController {
+  static getFriends = catchAsync(async (req, res, next) => {
+    const userId = req.id;
+    const friends = await FriendsRepository.getFriends(userId);
+    if (!friends) {
+      return next(new AppError("Unable to fetch friends at the moment", 500));
+    }
+    return res.status(200).json({
+      success: true,
+      status: "Friends fetched successfully",
+      friends,
+    });
+  });
+
   static getSuggestedFriends = catchAsync(async (req, res, next) => {
     const userId = req.id;
     const suggestedFriends = await FriendsRepository.getSuggestedFriends(
@@ -109,6 +122,38 @@ export default class FriendsController {
     return res.status(200).json({
       success: true,
       status: "Friend Request deleted successfully...",
+    });
+  });
+
+  static removeFollower = catchAsync(async (req, res, next) => {
+    const userId = req.id;
+    const { friendId } = req.body;
+    const deletionStatus = await FriendsRepository.removeFollower(
+      userId,
+      friendId
+    );
+    if (!deletionStatus) {
+      return next(new AppError("User not found", 404));
+    }
+    return res.status(201).json({
+      success: true,
+      status: "User removed from the followers list",
+    });
+  });
+
+  static removeFollowing = catchAsync(async (req, res, next) => {
+    const userId = req.id;
+    const { friendId } = req.body;
+    const deletionStatus = await FriendsRepository.removeFollowing(
+      userId,
+      friendId
+    );
+    if (!deletionStatus) {
+      return next(new AppError("User not found", 404));
+    }
+    return res.status(201).json({
+      success: true,
+      status: "User removed from the following list",
     });
   });
 }
