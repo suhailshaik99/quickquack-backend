@@ -17,7 +17,7 @@ function initSocketServer(io) {
     // Event for adding users to online users map
     setOnlineUsers(io, socket, onlineUsers);
     // Getting the online users among the friends of user
-    getOnlineUsers(io, socket, onlineUsers);
+    // getOnlineUsers(io, socket, onlineUsers);
     // Listening/Emitting to message events
     receiveMessageHandler(io, socket, onlineUsers);
 
@@ -26,7 +26,6 @@ function initSocketServer(io) {
       for (const [userId, socketId] of onlineUsers.entries()) {
         if (socketId === socket.id) {
           onlineUsers.delete(userId);
-          console.log(`User ${userId} disconnected and removed from onlineUsers`);
           break;
         }
       }

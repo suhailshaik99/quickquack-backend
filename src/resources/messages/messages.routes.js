@@ -1,4 +1,7 @@
+// Library Imports
 import express from "express";
+
+// Local Imports
 import MessagesController from "./messages.controller.js";
 import jwtAuthorizer from "../../middlewares/jwtAuthorizer.js";
 
@@ -10,5 +13,7 @@ router
   .post(jwtAuthorizer, MessagesController.createMessage)
   .put(jwtAuthorizer, MessagesController.editMessage)
   .delete(jwtAuthorizer, MessagesController.deleteMessage);
+
+router.get("/:receiver", jwtAuthorizer, MessagesController.getUserMessages);
 
 export { router };
