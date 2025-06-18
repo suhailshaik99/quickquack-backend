@@ -88,9 +88,41 @@ class UserController {
     });
   });
 
+  static updateProfileDetails = catchAsync(async (req, res, next) => {
+  const userId = req.id;
+  const profileUrl = req?.file?.cloudStorageURL;
+  const { username, bio, removeProfile } = req.body;
+
+  let updateData = { username, bio };
+
+  // ✅ Case 1: New profile picture uploaded
+  if (profileUrl) {
+    updateData.profilePicture = profileUrl;
+  }
+
+  // ✅ Case 2: User wants to remove profile picture
+  if (removeProfile === 'true') {
+    updateData.profilePicture = ""; // or default profile path if you store one
+  }
+
+  const updateStatus = await UserRepository.updateProfileDetails(userId, updateData);
+
+  if (!updateStatus) {
+    return next(new AppError("Error Updating Profile...", 500));
+  }
+
+  return res.status(201).json({
+    success: true,
+    status: "Profile details updated successfully",
+  });
+});
+
   static getUserDetails = catchAsync(async (req, res, next) => {
     const { username } = req.params;
     const userDetails = await UserRepository.getUserProfileDetails(username);
+    if (!userDetails) {
+      return next(new AppError("User doesn't exist", 404));
+    }
     res.status(200).json({
       success: true,
       status: "fetched user details successfully!",

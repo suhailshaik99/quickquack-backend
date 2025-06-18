@@ -25,7 +25,7 @@ export default function receiveMessageHandler(io, socket, onlineUsers) {
   socket.on("typing", ({ userId, receiverId }) => {
     const receiverSocketId = onlineUsers.get(receiverId.toString());
     if (receiverSocketId) {
-      io.to(receiverSocketId).emit("typing");
+      io.to(receiverSocketId).emit("typing", { sender: userId });
     }
   });
 }

@@ -49,4 +49,44 @@ async function uploadToGCS(req, res, next) {
   }
 }
 
-export { upload, uploadToGCS };
+async function profileUploadToGCS(req, res, next) {
+  try {
+    if (!req.file) {
+      return next();
+    }
+
+    const optimizedBuffer = await sharp(req.file.buffer)
+      .rotate()
+      .resize({ width: 1080 })
+      .toFormat("webp")
+      .webp({ quality: 100, chromaSubsampling: "4:4:4" })
+      .toBuffer();
+
+    const fileName = `ProfilePicture-Uploads/${uuid()}.webp`;
+    const blob = bucket.file(fileName);
+    const blobStream = blob.createWriteStream({
+      resumable: false,
+      metadata: {
+        contentType: req.file.mimetype,
+      },
+    });
+
+    blobStream.on("error", (err) => {
+      next(new AppError(err.message || "Error uploading the post..", 500));
+    });
+
+    blobStream.on("finish", () => {
+      const publicURL = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+      req.file.cloudStorageURL = publicURL;
+      next();
+    });
+
+    blobStream.end(optimizedBuffer);
+  } catch (error) {
+    return next(
+      new AppError(error.message || "Error processing image..!", 500)
+    );
+  }
+}
+
+export { upload, uploadToGCS, profileUploadToGCS };

@@ -1,7 +1,7 @@
 // Local Imports
-import getOnlineUsers from "./getOnlineUsersHandler.js";
 import setOnlineUsers from "./setOnlineUsersHandler.js";
 import receiveMessageHandler from "./Message-Handlers/receiveMessageHandler.js";
+import unreadMessagesHandler from "./Message-Handlers/unreadMessagesHandler.js";
 
 function initSocketServer(io) {
 
@@ -16,20 +16,22 @@ function initSocketServer(io) {
 
     // Event for adding users to online users map
     setOnlineUsers(io, socket, onlineUsers);
-    // Getting the online users among the friends of user
-    // getOnlineUsers(io, socket, onlineUsers);
+    
     // Listening/Emitting to message events
     receiveMessageHandler(io, socket, onlineUsers);
+
+    // Listening to the getUnreadMessages event
+    unreadMessagesHandler(io, socket, onlineUsers);
 
     // Socket Disconnection
     socket.on("disconnect", () => {
       for (const [userId, socketId] of onlineUsers.entries()) {
         if (socketId === socket.id) {
           onlineUsers.delete(userId);
+          console.log(`user ${userId} disconnected with socketID: ${socketId}`);
           break;
         }
       }
-      socket.emit("online-users-response", onlineUsers);
     });
   });
 }
