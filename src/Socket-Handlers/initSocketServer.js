@@ -2,6 +2,7 @@
 import setOnlineUsers from "./setOnlineUsersHandler.js";
 import receiveMessageHandler from "./Message-Handlers/receiveMessageHandler.js";
 import unreadMessagesHandler from "./Message-Handlers/unreadMessagesHandler.js";
+import friendRequestHandlers from "./Friends-Handlers/friend-request-handlers.js";
 
 function initSocketServer(io) {
 
@@ -22,6 +23,9 @@ function initSocketServer(io) {
 
     // Listening to the getUnreadMessages event
     unreadMessagesHandler(io, socket, onlineUsers);
+
+    // Listening for friend request events
+    friendRequestHandlers(io, socket, onlineUsers);
 
     // Socket Disconnection
     socket.on("disconnect", () => {

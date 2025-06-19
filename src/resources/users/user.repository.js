@@ -5,10 +5,12 @@ import AppError from "../../utils/AppError.js";
 import sendEmail from "../../utils/NodeMailer.js";
 
 class UserRepository {
+  // Signing Up the user
   static async signUpUser(userData) {
     return await User.create(userData);
   }
 
+  // Logging In the user
   static async loginUser(email, password) {
     const user = await User.findOne({ email }).select("+password");
     if (!user) return false;
@@ -16,6 +18,7 @@ class UserRepository {
     return success ? user : false;
   }
 
+  // Requesting OTP
   static async requestOTP(email) {
     const user = await User.findOne({ email });
     if (!user) return false;
@@ -36,6 +39,7 @@ class UserRepository {
     }
   }
 
+  // Submitting OTP
   static async submitOTP(otp, password, confirmPassword) {
     const user = await User.findOne({
       passwordResetToken: otp,
@@ -50,6 +54,7 @@ class UserRepository {
     return updatedUser ? true : false;
   }
 
+  // Getting LoggedIn user details
   static async getUserDetails(id) {
     const user = await User.findById(
       { _id: id },
@@ -67,15 +72,15 @@ class UserRepository {
     return user;
   }
 
+  // Getting friends profile details (not logged in user)
   static async getUserProfileDetails(username) {
-    try {
-      const user = await User.findOne(
+    const user = await User.findOne(
       { username },
       {
         _id: 1,
       }
     );
-    if(!user) return false;
+    if (!user) return false;
     const userProfileDetails = await User.aggregate([
       { $match: { _id: user._id } },
 
@@ -154,16 +159,14 @@ class UserRepository {
     ]);
 
     return userProfileDetails[0];
-    } catch (error) {
-      console.log(error);
-      throw new Error(error.message)
-    }
   }
 
+  // Updating profile details of the logged in user
   static async updateProfileDetails(userId, data) {
     return await User.findByIdAndUpdate({ _id: userId }, data);
   }
 
+  // Getting Logged In user profile details (followers, following, posts count...)
   static async getProfileDetails(id) {
     const userId = new mongoose.Types.ObjectId(id);
     const profileDetails = await User.aggregate([
