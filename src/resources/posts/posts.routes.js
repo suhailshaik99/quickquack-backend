@@ -14,6 +14,7 @@ router
     upload.single("postUpload"),
     uploadToGCS,
     PostsController.createPost
-  );
+  )
+  .delete(jwtAuthorizer, PostsController.deletePost);
 
 export { router };

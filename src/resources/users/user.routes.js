@@ -7,7 +7,6 @@ import jwtAuthorizer from "../../middlewares/jwtAuthorizer.js";
 import {
   profileUploadToGCS,
   upload,
-  uploadToGCS,
 } from "../../middlewares/multer.js";
 
 const router = express.Router();

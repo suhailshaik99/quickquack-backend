@@ -49,6 +49,24 @@ async function uploadToGCS(req, res, next) {
   }
 }
 
+async function deletePostFromGCS(fileUrl) {
+  if (!fileUrl) {
+    throw new AppError("No file URL provided, skipping GCS deletion.", 400);
+  }
+  try {
+    const filePath = fileUrl.split(`/${bucket.name}`)[1].replace(/^\/+/, "");
+    if (!filePath) {
+      throw new AppError("Could not extract file path from URL:", 400);
+    }
+    await bucket.file(filePath).delete();
+  } catch (error) {
+    throw new AppError(
+      `Error deleting file from GCS: ${error.message || "Unknown error"}`,
+      500
+    );
+  }
+}
+
 async function profileUploadToGCS(req, res, next) {
   try {
     if (!req.file) {
@@ -89,4 +107,4 @@ async function profileUploadToGCS(req, res, next) {
   }
 }
 
-export { upload, uploadToGCS, profileUploadToGCS };
+export { upload, uploadToGCS, deletePostFromGCS, profileUploadToGCS };

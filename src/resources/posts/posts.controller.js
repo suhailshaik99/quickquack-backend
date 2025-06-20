@@ -40,6 +40,18 @@ class PostsController {
       status: "Post Uploaded",
     });
   });
+
+  static deletePost = catchAsync(async (req, res, next) => {
+    const { userId, postId } = req.body;
+    const deletePost = await PostsRepository.deletePost(userId, postId);
+    if (!deletePost) {
+      return next(new AppError("Error deleting post", 500));
+    }
+    return res.status(201).json({
+      success: true,
+      status: "Post Deleted Successfully",
+    });
+  });
 }
 
 export default PostsController;

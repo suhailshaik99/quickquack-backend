@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import User from "./user.model.js";
 import AppError from "../../utils/AppError.js";
 import sendEmail from "../../utils/NodeMailer.js";
+import { deletePostFromGCS } from "../../middlewares/multer.js";
 
 class UserRepository {
   // Signing Up the user
@@ -162,8 +163,26 @@ class UserRepository {
   }
 
   // Updating profile details of the logged in user
-  static async updateProfileDetails(userId, data) {
-    return await User.findByIdAndUpdate({ _id: userId }, data);
+  static async updateProfileDetails(userId, updateData) {
+
+    const user = await User.findById(userId);
+    if (!user) return false;
+    
+    if (updateData.removeProfile) {
+      if (user.profilePicture) {
+        await deletePostFromGCS(user.profilePicture);
+      }
+      updateData.profilePicture = "";
+    }
+
+    else if (updateData.profilePicture) {
+      if (user.profilePicture) {
+        await deletePostFromGCS(user.profilePicture);
+      }
+    }
+
+    delete updateData.removeProfile;
+    return await User.findByIdAndUpdate(userId, updateData, { new: true });
   }
 
   // Getting Logged In user profile details (followers, following, posts count...)

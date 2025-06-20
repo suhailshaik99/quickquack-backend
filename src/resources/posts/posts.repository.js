@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Posts from "./posts.model.js";
+import { deletePostFromGCS } from "../../middlewares/multer.js";
 
 class PostsRepository {
   static async getPostsByUserId(userId) {
@@ -37,6 +38,22 @@ class PostsRepository {
 
   static async createPost(data) {
     return await Posts.create(data);
+  }
+
+  static async deletePost(user, post) {
+    const userId = new mongoose.Types.ObjectId(user);
+    const postId = new mongoose.Types.ObjectId(post);
+    const existingPost = await Posts.findOne({
+      _id: postId
+    })
+    if(!existingPost) {
+      return false;
+    }
+    await deletePostFromGCS(existingPost.postUrl);
+    return await Posts.findOneAndDelete({
+      _id: postId,
+      postedBy: userId,
+    });
   }
 }
 

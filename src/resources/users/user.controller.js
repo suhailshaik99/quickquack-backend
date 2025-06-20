@@ -6,6 +6,7 @@ import signJWT from "../../utils/signJWT.js";
 import AppError from "../../utils/AppError.js";
 import UserRepository from "./user.repository.js";
 import catchAsync from "../../utils/CatchAsync.js";
+import { deletePostFromGCS } from "../../middlewares/multer.js";
 
 class UserController {
   static userSignUp = catchAsync(async (req, res, next) => {
@@ -89,33 +90,33 @@ class UserController {
   });
 
   static updateProfileDetails = catchAsync(async (req, res, next) => {
-  const userId = req.id;
-  const profileUrl = req?.file?.cloudStorageURL;
-  const { username, bio, removeProfile } = req.body;
+    const userId = req.id;
+    const profileUrl = req?.file?.cloudStorageURL;
+    const { username, bio, removeProfile } = req.body;
 
-  let updateData = { username, bio };
+    let updateData = { username, bio, removeProfile };
+    if (profileUrl) {
+      updateData.profilePicture = profileUrl;
+    }
 
-  // ✅ Case 1: New profile picture uploaded
-  if (profileUrl) {
-    updateData.profilePicture = profileUrl;
-  }
+    // ✅ Case 2: User wants to remove profile picture
+    if (removeProfile) {
+      updateData.profilePicture = "";
+    }
 
-  // ✅ Case 2: User wants to remove profile picture
-  if (removeProfile === 'true') {
-    updateData.profilePicture = ""; // or default profile path if you store one
-  }
+    const updateStatus = await UserRepository.updateProfileDetails(
+      userId,
+      updateData
+    );
+    if (!updateStatus) {
+      return next(new AppError("Error Updating Profile...", 500));
+    }
 
-  const updateStatus = await UserRepository.updateProfileDetails(userId, updateData);
-
-  if (!updateStatus) {
-    return next(new AppError("Error Updating Profile...", 500));
-  }
-
-  return res.status(201).json({
-    success: true,
-    status: "Profile details updated successfully",
+    return res.status(201).json({
+      success: true,
+      status: "Profile details updated successfully",
+    });
   });
-});
 
   static getUserDetails = catchAsync(async (req, res, next) => {
     const { username } = req.params;
