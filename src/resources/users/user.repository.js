@@ -1,5 +1,7 @@
+// Library Imports
 import mongoose from "mongoose";
 
+// Local Imports
 import User from "./user.model.js";
 import AppError from "../../utils/AppError.js";
 import sendEmail from "../../utils/NodeMailer.js";

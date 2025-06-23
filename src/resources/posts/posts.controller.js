@@ -4,7 +4,7 @@ import PostsRepository from "./posts.repository.js";
 
 class PostsController {
   static getPostsByUserId = catchAsync(async (req, res, next) => {
-    const posts = await PostsRepository.getPostsByUserId(req.id);
+    const posts = await PostsRepository.getFeedPosts(req.id);
     if (posts.length == 0) {
       return res.status(200).json({
         success: true,
@@ -38,6 +38,7 @@ class PostsController {
     return res.status(200).json({
       success: true,
       status: "Post Uploaded",
+      post
     });
   });
 

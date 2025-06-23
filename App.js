@@ -15,6 +15,7 @@ import { router as searchRouter } from "./src/resources/Search/search.routes.js"
 import { router as friendsRouter } from "./src/resources/friends/friends.routes.js";
 import { router as messagesRouter } from "./src/resources/messages/messages.routes.js";
 import { router as commentsRouter } from "./src/resources/comments/comments.routes.js";
+import { router as NotificationsRouter } from "./src/resources/notifications/notification.routes.js"
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -44,6 +45,7 @@ app.use("/api/v1/search", searchRouter);
 app.use("/api/v1/friends", friendsRouter);
 app.use("/api/v1/messages", messagesRouter);
 app.use("/api/v1/comments", commentsRouter);
+app.use("/api/v1/notifications", NotificationsRouter);
 
 // Unhandled Routes
 app.all("*", (req, res) => {
