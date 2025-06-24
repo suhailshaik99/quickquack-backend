@@ -12,6 +12,7 @@ import { router as userRouter } from "./src/resources/users/user.routes.js";
 import { router as likesRouter } from "./src/resources/likes/likes.routes.js";
 import { router as postsRouter } from "./src/resources/posts/posts.routes.js";
 import { router as searchRouter } from "./src/resources/Search/search.routes.js";
+import { router as logoutRouter } from "./src/resources/logout/logout.routes.js";
 import { router as friendsRouter } from "./src/resources/friends/friends.routes.js";
 import { router as messagesRouter } from "./src/resources/messages/messages.routes.js";
 import { router as commentsRouter } from "./src/resources/comments/comments.routes.js";
@@ -19,7 +20,6 @@ import { router as NotificationsRouter } from "./src/resources/notifications/not
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 dotenv.config({ path: `${__dirname}/config.env` });
 
 // Creating express server
@@ -42,6 +42,7 @@ app.use("/api/v1/user", userRouter);
 app.use("/api/v1/likes", likesRouter);
 app.use("/api/v1/posts", postsRouter);
 app.use("/api/v1/search", searchRouter);
+app.use("/api/v1/logout", logoutRouter);
 app.use("/api/v1/friends", friendsRouter);
 app.use("/api/v1/messages", messagesRouter);
 app.use("/api/v1/comments", commentsRouter);

@@ -24,10 +24,12 @@ class PostsController {
       return next(new AppError("No post(s) selected to upload", 400));
     }
 
-    const { description, location } = req.body;
+    const { description, location, postedAt, postedOn } = req.body;
     const postUrl = req.file?.cloudStorageURL;
     const post = await PostsRepository.createPost({
       description,
+      postedAt,
+      postedOn,
       location,
       postUrl,
       postedBy: req.id,
@@ -38,7 +40,7 @@ class PostsController {
     return res.status(200).json({
       success: true,
       status: "Post Uploaded",
-      post
+      post,
     });
   });
 

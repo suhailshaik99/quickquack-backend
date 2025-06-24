@@ -10,6 +10,8 @@ const postSchema = mongoose.Schema(
     postUrl: String,
     description: String,
     location: String,
+    postedAt: String,
+    postedOn: String,
   },
   {
     timestamps: true,
