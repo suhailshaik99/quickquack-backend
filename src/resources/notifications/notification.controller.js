@@ -1,3 +1,4 @@
+// Local Imports
 import catchAsync from "../../utils/CatchAsync.js";
 import NotificationsRepository from "./notification.repository.js";
 
@@ -11,6 +12,7 @@ export default class NotificationsController {
       return res.status(200).json({
         success: true,
         status: "No notifications yet!",
+        notifications
       });
     }
     return res.status(200).json({

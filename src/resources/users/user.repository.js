@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 // Local Imports
 import User from "./user.model.js";
 import AppError from "../../utils/AppError.js";
-import sendEmail from "../../utils/NodeMailer.js";
+import sendEmail from "../../utils/sendEmail.js";
 import { deletePostFromGCS } from "../../middlewares/multer.js";
 
 class UserRepository {
@@ -30,7 +30,6 @@ class UserRepository {
     try {
       await sendEmail({
         email: user.email,
-        subject: "Your password reset token (valid for 10 mins)",
         token,
       });
       return token;

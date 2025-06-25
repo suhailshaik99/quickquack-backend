@@ -1,7 +1,9 @@
 // Library Imports
 import cors from "cors";
 import path from "path";
+import xss from "xss-clean";
 import dotenv from "dotenv";
+import helmet from "helmet";
 import express from "express";
 import { fileURLToPath } from "url";
 import cookieParser from "cookie-parser";
@@ -16,7 +18,7 @@ import { router as logoutRouter } from "./src/resources/logout/logout.routes.js"
 import { router as friendsRouter } from "./src/resources/friends/friends.routes.js";
 import { router as messagesRouter } from "./src/resources/messages/messages.routes.js";
 import { router as commentsRouter } from "./src/resources/comments/comments.routes.js";
-import { router as NotificationsRouter } from "./src/resources/notifications/notification.routes.js"
+import { router as NotificationsRouter } from "./src/resources/notifications/notification.routes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -26,6 +28,8 @@ dotenv.config({ path: `${__dirname}/config.env` });
 const app = express();
 
 // Route Middlewares
+app.use(xss());
+app.use(helmet());
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

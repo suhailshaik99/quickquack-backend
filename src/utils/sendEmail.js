@@ -1,4 +1,13 @@
-import nodemailer from "nodemailer";
+import path from "path";
+import dotenv from "dotenv";
+import { Resend } from "resend";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.join(__dirname, "../../config.env") });
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 function getMessage(token) {
   return `<!DOCTYPE html>
@@ -69,23 +78,18 @@ function getMessage(token) {
 }
 
 async function sendEmail(options) {
-  const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: process.env.EMAIL_PORT,
-    auth: {
-      user: process.env.EMAIL_USERNAME,
-      pass: process.env.EMAIL_PASSWORD,
-    },
-  });
-
   const emailOptions = {
-    from: "QuickQuack <support@quickquack.com>",
+    from: "QuickQuack <onboarding@resend.dev>",
     to: options.email,
     subject: "🔐 QuickQuack Password Reset OTP",
     html: getMessage(options.token),
   };
 
-  await transporter.sendMail(emailOptions);
+  try {
+    const response = await resend.emails.send(emailOptions);
+  } catch (error) {
+    throw new Error("Error Sending Email..");
+  }
 }
 
 export default sendEmail;

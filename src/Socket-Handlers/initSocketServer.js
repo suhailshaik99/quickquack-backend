@@ -6,6 +6,7 @@ import friendRequestHandlers from "./Friends-Handlers/friend-request-handlers.js
 import likesNotificationsHandlers from "./Likes-Handlers/likesNotificationsHandlers.js";
 import postsNotificationsHandlers from "./Posts-Handlers/postsNotificationsHandlers.js";
 import commentNotificationsHandlers from "./Comments-Handlers/commentNotificationsHandlers.js";
+import postDeleteHandlers from "./Posts-Handlers/postDeleteHandlers.js";
 
 function initSocketServer(io) {
   // JS Map to store the online users.
@@ -26,6 +27,8 @@ function initSocketServer(io) {
     friendRequestHandlers(io, socket, onlineUsers);
     // Listening for triggering posts notifications
     postsNotificationsHandlers(io, socket, onlineUsers);
+    // Listening for triggering posts delete notifications
+    postDeleteHandlers(io, socket, onlineUsers);
     // Listening for triggering likes notifications
     likesNotificationsHandlers(io, socket, onlineUsers);
     // Listening for triggering comments notifications
