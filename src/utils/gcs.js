@@ -11,7 +11,7 @@ dotenv.config({ path: path.join(__dirname, "../../config.env") });
 // Initializing the GCS Client
 const storage = new Storage({
   keyFilename: process.env.GCP_KEYFILE_PATH,
-  projectId: process.env.GCP_PRODJECT_ID,
+  projectId: process.env.GCP_PROJECT_ID,
 });
 
 const bucket = storage.bucket(process.env.GCP_BUCKET_NAME);
