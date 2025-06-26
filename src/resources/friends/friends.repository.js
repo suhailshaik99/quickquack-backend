@@ -3,7 +3,6 @@ import Friends from "./friends.model.js";
 import User from "../users/user.model.js";
 
 export default class FriendsRepository {
-
   static async getSuggestedFriends(userId) {
     const user = new mongoose.Types.ObjectId(userId);
 
@@ -94,80 +93,95 @@ export default class FriendsRepository {
   }
 
   static async getFriends(id) {
-    const userId = new mongoose.Types.ObjectId(id);
-    const friends = await User.aggregate([
-      { $match: { _id: userId } },
-      // Followers: people who sent me a request (I am the recipient)
-      {
-        $lookup: {
-          from: "friends",
-          localField: "_id",
-          foreignField: "recipient",
-          as: "followers",
-        },
-      },
+  const userId = new mongoose.Types.ObjectId(id);
+  const friends = await User.aggregate([
+    { $match: { _id: userId } },
 
-      // Following: people I sent a request to (I am the requester)
-      {
-        $lookup: {
-          from: "friends",
-          localField: "_id",
-          foreignField: "requester",
-          as: "following",
-        },
+    // Followers: people who sent me a request (I am the recipient)
+    {
+      $lookup: {
+        from: "friends",
+        localField: "_id",
+        foreignField: "recipient",
+        as: "followers",
       },
+    },
 
-      // Populate followers with requester details
-      {
-        $lookup: {
-          from: "users",
-          localField: "followers.requester",
-          foreignField: "_id",
-          as: "followerUsers",
-        },
+    // Following: people I sent a request to (I am the requester)
+    {
+      $lookup: {
+        from: "friends",
+        localField: "_id",
+        foreignField: "requester",
+        as: "following",
       },
+    },
 
-      // Populate following with recipient details
-      {
-        $lookup: {
-          from: "users",
-          localField: "following.recipient",
-          foreignField: "_id",
-          as: "followingUsers",
-        },
-      },
-
-      {
-        $project: {
-          _id: 1,
-          followers: {
-            $map: {
-              input: "$followerUsers",
-              as: "f",
-              in: {
-                _id: "$$f._id",
-                username: "$$f.username",
-                profilePicture: "$$f.profilePicture",
-              },
-            },
-          },
-          following: {
-            $map: {
-              input: "$followingUsers",
-              as: "f",
-              in: {
-                _id: "$$f._id",
-                username: "$$f.username",
-                profilePicture: "$$f.profilePicture",
-              },
-            },
+    // ✅ Move filter BEFORE populating followerUsers
+    {
+      $addFields: {
+        followers: {
+          $filter: {
+            input: "$followers",
+            as: "f",
+            cond: { $eq: ["$$f.status", "accepted"] },
           },
         },
       },
-    ]);
+    },
 
-    return friends[0];
-  }
+    // ✅ Now populate only accepted followers
+    {
+      $lookup: {
+        from: "users",
+        localField: "followers.requester",
+        foreignField: "_id",
+        as: "followerUsers",
+      },
+    },
+
+    // Populate following with recipient details
+    {
+      $lookup: {
+        from: "users",
+        localField: "following.recipient",
+        foreignField: "_id",
+        as: "followingUsers",
+      },
+    },
+
+    {
+      $project: {
+        _id: 1,
+        followers: {
+          $map: {
+            input: "$followerUsers",
+            as: "f",
+            in: {
+              _id: "$$f._id",
+              username: "$$f.username",
+              profilePicture: "$$f.profilePicture",
+            },
+          },
+        },
+        following: {
+          $map: {
+            input: "$followingUsers",
+            as: "f",
+            in: {
+              _id: "$$f._id",
+              username: "$$f.username",
+              profilePicture: "$$f.profilePicture",
+            },
+          },
+        },
+      },
+    },
+  ]);
+
+  return friends[0];
+}
+
 
   static async removeFollower(userId, friendId) {
     return await Friends.findOneAndDelete({

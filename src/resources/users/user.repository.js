@@ -230,7 +230,7 @@ class UserRepository {
             $filter: {
               input: "$allFollowing",
               as: "f",
-              cond: { $eq: ["$$f.status", "accepted"] },
+              cond: { $in: ["$$f.status", ["accepted", "pending"]] },
             },
           },
           followers: {

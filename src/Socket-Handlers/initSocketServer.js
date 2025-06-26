@@ -7,6 +7,7 @@ import likesNotificationsHandlers from "./Likes-Handlers/likesNotificationsHandl
 import postsNotificationsHandlers from "./Posts-Handlers/postsNotificationsHandlers.js";
 import commentNotificationsHandlers from "./Comments-Handlers/commentNotificationsHandlers.js";
 import postDeleteHandlers from "./Posts-Handlers/postDeleteHandlers.js";
+import reqConfDelHandlers from "./Friends-Handlers/req-conf-del-handlers.js";
 
 function initSocketServer(io) {
   // JS Map to store the online users.
@@ -25,6 +26,8 @@ function initSocketServer(io) {
     unreadMessagesHandler(io, socket, onlineUsers);
     // Listening for friend request events
     friendRequestHandlers(io, socket, onlineUsers);
+    // Listening for req conf/del notifications
+    reqConfDelHandlers(io, socket, onlineUsers);
     // Listening for triggering posts notifications
     postsNotificationsHandlers(io, socket, onlineUsers);
     // Listening for triggering posts delete notifications
@@ -39,7 +42,6 @@ function initSocketServer(io) {
       for (const [userId, socketId] of onlineUsers.entries()) {
         if (socketId === socket.id) {
           onlineUsers.delete(userId);
-          console.log(`user ${userId} disconnected with socketID: ${socketId}`);
           break;
         }
       }

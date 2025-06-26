@@ -1,8 +1,13 @@
+// Library Imports
 import mongoose from "mongoose";
 
+// Local Imports
 import Posts from "./posts.model.js";
+import Likes from "../likes/likes.model.js";
 import Friends from "../friends/friends.model.js";
+import Comments from "../comments/comments.model.js";
 import { deletePostFromGCS } from "../../middlewares/multer.js";
+import Notification from "../notifications/notification.model.js";
 
 class PostsRepository {
   static async getPostsByUserId(userId) {
@@ -45,128 +50,133 @@ class PostsRepository {
   }
 
   static async getFeedPosts(userId) {
-  const objectUserId = new mongoose.Types.ObjectId(userId);
+    const objectUserId = new mongoose.Types.ObjectId(userId);
 
-  const followingUsers = await Friends.aggregate([
-    {
-      $match: {
-        requester: objectUserId,
-        status: "accepted",
+    const followingUsers = await Friends.aggregate([
+      {
+        $match: {
+          requester: objectUserId,
+          status: "accepted",
+        },
       },
-    },
-    {
-      $project: {
-        _id: 0,
-        followingUserId: "$recipient",
+      {
+        $project: {
+          _id: 0,
+          followingUserId: "$recipient",
+        },
       },
-    },
-  ]);
+    ]);
 
-  const followingIds = followingUsers.map((f) => f.followingUserId);
-  const usersToInclude = [objectUserId, ...followingIds];
-
-  return await Posts.aggregate([
-    {
-      $match: {
-        postedBy: { $in: usersToInclude },
+    const followingIds = followingUsers.map((f) => f.followingUserId);
+    const usersToInclude = [objectUserId, ...followingIds];
+    return await Posts.aggregate([
+      {
+        $match: {
+          postedBy: { $in: usersToInclude },
+        },
       },
-    },
-    // Lookup likes count
-    {
-      $lookup: {
-        from: "likes",
-        let: { postId: "$_id" },
-        pipeline: [
-          {
-            $match: {
-              $expr: { $eq: ["$postId", "$$postId"] },
+      // Lookup likes count
+      {
+        $lookup: {
+          from: "likes",
+          let: { postId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ["$postId", "$$postId"] },
+              },
             },
-          },
-          {
-            $group: {
-              _id: null,
-              count: { $sum: 1 },
-              likedByUser: {
-                $addToSet: {
-                  $cond: [
-                    { $eq: ["$userId", objectUserId] },
-                    true,
-                    "$$REMOVE"
-                  ]
-                }
-              }
-            }
-          }
-        ],
-        as: "likeData",
-      },
-    },
-    {
-      $addFields: {
-        likesCount: {
-          $ifNull: [{ $arrayElemAt: ["$likeData.count", 0] }, 0],
-        },
-        isLikedByUser: {
-          $gt: [{ $size: { $ifNull: [{ $arrayElemAt: ["$likeData.likedByUser", 0] }, []] } }, 0],
-        },
-      },
-    },
-    // Lookup comments count
-    {
-      $lookup: {
-        from: "comments",
-        let: { postId: "$_id" },
-        pipeline: [
-          {
-            $match: {
-              $expr: { $eq: ["$postId", "$$postId"] },
+            {
+              $group: {
+                _id: null,
+                count: { $sum: 1 },
+                likedByUser: {
+                  $addToSet: {
+                    $cond: [
+                      { $eq: ["$userId", objectUserId] },
+                      true,
+                      "$$REMOVE",
+                    ],
+                  },
+                },
+              },
             },
-          },
-          { $count: "count" },
-        ],
-        as: "commentData",
-      },
-    },
-    {
-      $addFields: {
-        commentsCount: {
-          $ifNull: [{ $arrayElemAt: ["$commentData.count", 0] }, 0],
+          ],
+          as: "likeData",
         },
       },
-    },
-    // Populate postedBy with username and profilePicture
-    {
-      $lookup: {
-        from: "users",
-        localField: "postedBy",
-        foreignField: "_id",
-        as: "postedBy",
+      {
+        $addFields: {
+          likesCount: {
+            $ifNull: [{ $arrayElemAt: ["$likeData.count", 0] }, 0],
+          },
+          isLikedByUser: {
+            $gt: [
+              {
+                $size: {
+                  $ifNull: [{ $arrayElemAt: ["$likeData.likedByUser", 0] }, []],
+                },
+              },
+              0,
+            ],
+          },
+        },
       },
-    },
-    {
-      $unwind: "$postedBy",
-    },
-    {
-      $project: {
-        _id: 1,
-        caption: 1,
-        postUrl: 1,
-        description: 1,
-        postedAt: 1,
-        postedOn: 1,
-        createdAt: 1,
-        likesCount: 1,
-        commentsCount: 1,
-        isLikedByUser: 1,
-        "postedBy._id": 1,
-        "postedBy.username": 1,
-        "postedBy.profilePicture": 1,
+      // Lookup comments count
+      {
+        $lookup: {
+          from: "comments",
+          let: { postId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ["$postId", "$$postId"] },
+              },
+            },
+            { $count: "count" },
+          ],
+          as: "commentData",
+        },
       },
-    },
-    { $sort: { createdAt: -1 } },
-  ]);
-}
-
+      {
+        $addFields: {
+          commentsCount: {
+            $ifNull: [{ $arrayElemAt: ["$commentData.count", 0] }, 0],
+          },
+        },
+      },
+      // Populate postedBy with username and profilePicture
+      {
+        $lookup: {
+          from: "users",
+          localField: "postedBy",
+          foreignField: "_id",
+          as: "postedBy",
+        },
+      },
+      {
+        $unwind: "$postedBy",
+      },
+      {
+        $project: {
+          _id: 1,
+          caption: 1,
+          postUrl: 1,
+          description: 1,
+          postedAt: 1,
+          postedOn: 1,
+          createdAt: 1,
+          likesCount: 1,
+          commentsCount: 1,
+          isLikedByUser: 1,
+          "postedBy._id": 1,
+          "postedBy.username": 1,
+          "postedBy.profilePicture": 1,
+        },
+      },
+      { $sort: { createdAt: -1 } },
+    ]);
+  }
 
   static async createPost(data) {
     return await Posts.create(data);
@@ -182,10 +192,21 @@ class PostsRepository {
       return false;
     }
     await deletePostFromGCS(existingPost.postUrl);
-    return await Posts.findOneAndDelete({
-      _id: postId,
-      postedBy: userId,
-    });
+    await Promise.all([
+      Posts.findOneAndDelete({
+        _id: postId,
+        postedBy: userId,
+      }),
+      Comments.deleteMany({ postId }),
+      Notification.deleteMany({
+        post: postId,
+        type: { $in: ["like", "comment", "new-post"] },
+      }),
+      Likes.deleteMany({
+        postId,
+      }),
+    ]);
+    return true;
   }
 }
 

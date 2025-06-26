@@ -7,7 +7,9 @@
   "type": "module",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon server.js"
+    "start": "nodemon server.js",
+    "build": "esbuild server.js --bundle --platform=node --target=node20 --minify --sourcemap --outfile=dist/server.js",
+    "clean": "rm -rf dist"
   },
   "dependencies": {
     "@google-cloud/storage": "^7.16.0",
@@ -21,6 +23,7 @@
     "moment-timezone": "^0.6.0",
     "mongoose": "^8.14.0",
     "multer": "^1.4.5-lts.2",
+    "pm2": "^6.0.8",
     "resend": "^4.6.0",
     "sharp": "^0.34.2",
     "socket.io": "^4.8.1",
@@ -28,6 +31,7 @@
     "xss-clean": "^0.1.4"
   },
   "devDependencies": {
+    "esbuild": "^0.25.5",
     "nodemon": "^3.1.9"
   }
 }

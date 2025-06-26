@@ -28,12 +28,12 @@ class UserController {
       email: userDetails.email,
     };
 
-    const token = signJWT(payload, process.env.JWT_SECRET, "2h");
+    const token = signJWT(payload, process.env.JWT_SECRET, "24h");
     res.cookie("jwtToken", token, {
       httpOnly: true,
       secure: true,
       sameSite: "None",
-      maxAge: 120 * 60 * 1000,
+      maxAge: 24 * 60 * 60 * 1000,
     });
     res.status(200).json({
       success: true,
