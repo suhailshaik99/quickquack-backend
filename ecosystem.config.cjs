@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: "quickquack-backend",
-      script: "dist/server.js",
+      script: "./server.js",
       instances: "max",
       autorestart: true,
       watch: false,

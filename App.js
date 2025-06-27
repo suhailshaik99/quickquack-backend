@@ -1,7 +1,7 @@
 // Library Imports
+import xss from "xss";
 import cors from "cors";
 import path from "path";
-import xss from "xss-clean";
 import dotenv from "dotenv";
 import helmet from "helmet";
 import express from "express";
@@ -27,6 +27,12 @@ dotenv.config({ path: `${__dirname}/config.env` });
 // Creating express server
 const app = express();
 
+const allowedOrigins = [
+  "http://localhost",
+  "http://localhost:5173",
+  "https://quickquack.in",
+];
+
 // Route Middlewares
 app.use(xss());
 app.use(helmet());
@@ -36,7 +42,13 @@ app.set("trust proxy", 1);
 app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS not allowed for this origin"));
+      }
+    },
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
