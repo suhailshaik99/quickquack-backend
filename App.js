@@ -1,10 +1,10 @@
 // Library Imports
-import xss from "xss";
 import cors from "cors";
 import path from "path";
 import dotenv from "dotenv";
 import helmet from "helmet";
 import express from "express";
+import xssClean from "xss-clean";
 import { fileURLToPath } from "url";
 import cookieParser from "cookie-parser";
 
@@ -31,11 +31,12 @@ const allowedOrigins = [
   "http://localhost",
   "http://localhost:5173",
   "https://quickquack.in",
+  "http://192.168.233.138",
 ];
 
 // Route Middlewares
-app.use(xss());
 app.use(helmet());
+app.use(xssClean());
 app.use(cookieParser());
 app.use(express.json());
 app.set("trust proxy", 1);
