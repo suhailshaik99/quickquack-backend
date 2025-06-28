@@ -1,13 +1,13 @@
 // Local Imports
 import setOnlineUsers from "./setOnlineUsersHandler.js";
+import postDeleteHandlers from "./Posts-Handlers/postDeleteHandlers.js";
+import reqConfDelHandlers from "./Friends-Handlers/req-conf-del-handlers.js";
 import receiveMessageHandler from "./Message-Handlers/receiveMessageHandler.js";
 import unreadMessagesHandler from "./Message-Handlers/unreadMessagesHandler.js";
 import friendRequestHandlers from "./Friends-Handlers/friend-request-handlers.js";
 import likesNotificationsHandlers from "./Likes-Handlers/likesNotificationsHandlers.js";
 import postsNotificationsHandlers from "./Posts-Handlers/postsNotificationsHandlers.js";
 import commentNotificationsHandlers from "./Comments-Handlers/commentNotificationsHandlers.js";
-import postDeleteHandlers from "./Posts-Handlers/postDeleteHandlers.js";
-import reqConfDelHandlers from "./Friends-Handlers/req-conf-del-handlers.js";
 
 function initSocketServer(io) {
   // JS Map to store the online users.

@@ -10,8 +10,9 @@ import initSocketServer from "./src/Socket-Handlers/initSocketServer.js";
 const allowedOrigins = [
   "http://localhost",
   "http://localhost:5173",
-  "https://quickquack.in",
   "http://192.168.233.138",
+  "https://quickquack.in",
+  "https://www.quickquack.in",
 ];
 
 const server = http.createServer(app);
@@ -31,8 +32,8 @@ const io = new Server(server, {
 
 initSocketServer(io);
 
-server.listen(process.env.PORT, () => {
-  ConnectDB();
+server.listen(process.env.PORT, async () => {
+  await ConnectDB();
   console.log("Socket Server is up and running...");
   console.log(`Application is listening on port ${process.env.PORT}`);
 });

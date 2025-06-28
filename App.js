@@ -30,8 +30,9 @@ const app = express();
 const allowedOrigins = [
   "http://localhost",
   "http://localhost:5173",
-  "https://quickquack.in",
   "http://192.168.233.138",
+  "https://quickquack.in",
+  "https://www.quickquack.in",
 ];
 
 // Route Middlewares
